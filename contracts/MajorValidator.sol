@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: MIT
+// Compatible with OpenZeppelin Contracts ^5.0.0
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
+// import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+
+contract MajorValidator is
+    Initializable,
+    ERC721Upgradeable,
+    ERC721URIStorageUpgradeable,
+    ERC721HolderUpgradeable,
+    OwnableUpgradeable
+{
+    uint256 public TokenId;
+
+    // @custom:oz-upgrades-unsafe-allow constructor
+    // constructor() {
+    //     _disableInitializers();
+    // }
+
+    struct NFTInfo {
+        string NFTNumber;
+        address currentOwner;
+    }
+    // NFT Id => NFTInfo
+    mapping(uint256 => NFTInfo) public nftInfo;
+
+    event NFTMinted(uint _tokenId,string _finalId);
+    event NFTOwnerUpdated(uint _tokenId,address _currentOwner);
+
+    function initialize(address initialOwner) public initializer {
+        __ERC721_init("MajorValidator", "MajorV");
+        __ERC721URIStorage_init();
+        __Ownable_init(initialOwner);
+    }
+
+    function safeMint(string memory uri) public onlyOwner {
+        TokenId++;
+        _safeMint(address(this), TokenId);
+        _setTokenURI(TokenId, uri);
+
+        string memory id = Strings.toString(TokenId);
+        string memory hash = "# 60 - ";
+        string memory finalId = string(abi.encodePacked(hash, id));
+        nftInfo[TokenId] = NFTInfo(finalId, address(this));
+
+        emit NFTMinted(TokenId,finalId);
+    }
+
+    function updateOwner(uint256 _tokenid, address _toeknidOwner)
+        public
+        onlyOwner
+    {
+        nftInfo[_tokenid].currentOwner = _toeknidOwner;
+        emit NFTOwnerUpdated(_tokenid,_toeknidOwner);
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+}
