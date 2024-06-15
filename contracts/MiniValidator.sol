@@ -51,11 +51,12 @@ contract MiniValidator is
         emit NFTMinted(TokenId, finalId);
     }
 
-    function updateOwner(uint256 _tokenid, address _toeknidOwner)
-        public
-        
-    {
-        require(msg.sender == owner() || msg.sender == nftInfo[_tokenid].currentOwner);
+    function updateOwner(uint256 _tokenid, address _toeknidOwner) public {
+        require(
+            msg.sender == owner() ||
+                msg.sender == nftInfo[_tokenid].currentOwner,
+            "You are not authorized to call this function"
+        );
         nftInfo[_tokenid].currentOwner = _toeknidOwner;
         emit NFTOwnerUpdated(_tokenid, _toeknidOwner);
     }
@@ -67,14 +68,11 @@ contract MiniValidator is
         address to,
         uint256 tokenId
     ) public virtual override(ERC721Upgradeable, IERC721) onlyOwner {
-
-        if(ownerOf(tokenId) == address(this)){
+        if (ownerOf(tokenId) == address(this)) {
             _transfer(address(this), to, tokenId);
-        }
-        else{
+        } else {
             _transfer(from, to, tokenId);
         }
-    
     }
 
     /**
@@ -97,7 +95,6 @@ contract MiniValidator is
         uint256 tokenId,
         bytes memory data
     ) public virtual override(ERC721Upgradeable, IERC721) onlyOwner {
-        
         super.safeTransferFrom(from, to, tokenId, data);
     }
 
